@@ -59,6 +59,8 @@ These instructions apply to the entire repository.
 - Keep `.github/workflows/security.yml` enabled. Security changes must not weaken
   its permissions, remove `govulncheck`, `gosec`, or CodeQL, or replace pinned
   third-party Action SHAs with floating branches.
+- Keep `.github/workflows/release.yml` tag-driven and preserve checksums,
+  cross-platform archives, explicit permissions, and pinned Action SHAs.
 - Use least-privilege GitHub Actions permissions. Never expose Redis credentials
   to pull-request workflows.
 - Do not suppress a security finding without documenting why it is a false
@@ -68,5 +70,7 @@ These instructions apply to the entire repository.
 
 - Keep README usage, Redis 5.0.x compatibility, safety guarantees, output
   semantics, and MVP limitations synchronized with implementation changes.
+- Keep `docs/runbook.md` synchronized with command behavior, operational impact,
+  production-safe sampling guidance, and stop conditions.
 - Examples must use placeholder addresses and environment-variable secret names,
   never real credentials or production identifiers.

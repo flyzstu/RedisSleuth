@@ -9,6 +9,14 @@ Key 和客户端连接问题。使用 Go 1.23+，支持 Linux 与 Windows 构建
 > Repository description: Read-only, low-intrusion Redis Cluster CPU, memory,
 > slot, key, and client diagnostics for Redis 5.0+.
 
+生产环境的分步排障流程、影响评估、停止条件和事件记录模板见
+[生产排障 Runbook](docs/runbook.md)。
+
+## 下载
+
+预编译的 Linux/Windows amd64、arm64 包和 SHA-256 校验文件可从
+[GitHub Releases](https://github.com/flyzstu/RedisSleuth/releases) 下载。
+
 ## 构建与运行
 
 ```bash
@@ -73,4 +81,8 @@ GitHub Actions 会在 push、Pull Request 和每周计划任务中执行：
 - `gosec` Go 代码安全风险扫描；
 - GitHub CodeQL 代码扫描。
 
-详细设计见 [docs/design.md](docs/design.md)，完整配置见 [examples/config.yaml](examples/config.yaml)。
+推送符合 `v*.*.*` 格式的版本标签时，Release 工作流会验证项目、交叉编译 Linux/Windows
+amd64 和 arm64、生成 SHA-256 校验文件，并自动创建 GitHub Release 和上传产物。
+
+详细设计见 [docs/design.md](docs/design.md)，完整配置见
+[examples/config.yaml](examples/config.yaml)。
