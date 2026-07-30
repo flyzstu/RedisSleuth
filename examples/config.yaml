@@ -1,0 +1,31 @@
+redis:
+  addr: 10.0.1.11:6379
+  username: default
+  password_env: REDIS_PASSWORD
+  tls: false
+  connect_timeout: 3s
+  command_timeout: 2s
+
+sampling:
+  duration: 30s
+  interval: 5s
+  scan_count: 100
+  sample_size: 1000
+  scan_rate: 500
+  top: 20
+
+thresholds:
+  cpu_percent: 80
+  memory_percent: 85
+  fragmentation_ratio: 1.5
+  client_connections_per_ip: 100
+  big_key_bytes: 1048576
+  master_memory_deviation_percent: 30
+  master_cpu_deviation_percent: 50
+  client_buffer_bytes: 67108864
+  replication_backlog_bytes: 268435456
+  no_ttl_percent: 80
+
+output:
+  format: table
+  show_full_key: false
