@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: "1.23.x"
+          check-latest: true
+          cache: true
+
+      - name: Verify
+        run: |
+          go mod verify
+          go test ./...
+          go vet ./...
+
+      - name: Build release archives
+        env:
+          VERSION: ${{ github.ref_name }}
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+          mkdir -p dist package
+
+          build_archive() {
+            goos="$1"
+            goarch="$2"
+            extension="$3"
+            archive="$4"
+            package_dir="package/redissleuth-${VERSION}-${goos}-${goarch}"
+
+            rm -rf "$package_dir"
+            mkdir -p "$package_dir"
+            GOOS="$goos" GOARCH="$goarch" go build \
+              -trimpath \
+              -ldflags="-s -w -X github.com/flyzstu/RedisSleuth/cmd.version=${VERSION}" \
+              -o "${package_dir}/redissleuth${extension}" .
+            cp README.md "${package_dir}/README.md"
+
+            if [ "$goos" = "windows" ]; then
+              (
+                cd package
+                zip -qr "../dist/${archive}" "$(basename "$package_dir")"
+              )
+            else
+              tar -C package -czf "dist/${archive}" "$(basename "$package_dir")"
+            fi
+          }
+
+          build_archive linux amd64 "" "redissleuth-${VERSION}-linux-amd64.tar.gz"
+          build_archive linux arm64 "" "redissleuth-${VERSION}-linux-arm64.tar.gz"
+          build_archive windows amd64 ".exe" "redissleuth-${VERSION}-windows-amd64.zip"
+          build_archive windows arm64 ".exe" "redissleuth-${VERSION}-windows-arm64.zip"
+
+          (
+            cd dist
+            sha256sum -- ./*.tar.gz ./*.zip > checksums.txt
+          )
+
+      - name: Create GitHub Release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --verify-tag \
+            --title "RedisSleuth ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --latest
